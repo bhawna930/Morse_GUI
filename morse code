@@ -1,0 +1,69 @@
+import tkinter as tk
+import RPi.GPIO as GPIO
+import time
+
+# Setup GPIO
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(10, GPIO.OUT)
+
+# Morse Code Dictionary 
+morse_code_dict = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
+    'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
+    'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+    'Y': '-.--', 'Z': '--..',
+}
+
+# Function to translate a word to Morse code
+def translate_to_morse(word):
+    morse_code = ""
+    for char in word:
+        if char.upper() in morse_code_dict:
+            morse_code += morse_code_dict[char.upper()] + " "
+        else:
+            morse_code += " "
+    return morse_code
+
+# Function to blink LED based on Morse code symbol
+def blink_symbol(symbol):
+    if symbol == '.':
+        GPIO.output(10, GPIO.HIGH)
+        time.sleep(0.2)  # Dot duration
+        GPIO.output(10, GPIO.LOW)
+        time.sleep(0.2)  # Gap between dots and dashes
+    elif symbol == '-':
+        GPIO.output(10, GPIO.HIGH)
+        time.sleep(0.6)  # Dash duration
+        GPIO.output(10, GPIO.LOW)
+        time.sleep(0.2)  # Gap between dots and dashes
+    elif symbol == ' ':
+        time.sleep(0.6)  # Gap between letters
+
+# Function to handle button click
+def on_button_click():
+    input_word = entry.get()[:12]  # Maximum 12 characters
+    morse_code = translate_to_morse(input_word)
+    
+    for symbol in morse_code:
+        if symbol == ' ':
+            time.sleep(1)  # Gap between words
+        else:
+            blink_symbol(symbol)
+
+# Create the GUI window
+root = tk.Tk()
+root.title("Morse Code Translator")
+
+# Create an entry field for input
+entry = tk.Entry(root, width=30)
+entry.pack(pady=10)
+
+# Create a button to trigger Morse code translation and LED blinking
+button = tk.Button(root, text="Translate and Blink LED", command=on_button_click)
+button.pack()
+
+# Run the GUI main loop
+root.mainloop()
+
+# Clean up GPIO when the program exits
+GPIO.cleanup()
